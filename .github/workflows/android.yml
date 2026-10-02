@@ -31,31 +31,37 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # Build without running the failing lint task.
-      - name: Build with Gradle
-        run: ./gradlew assembleDebug --stacktrace
-
       - name: Build Debug APK
         if: ${{ github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == 'both' }}
         run: ./gradlew assembleDebug
+
+      - name: Show generated APKs
+        if: always()
+        run: find app/build/outputs/apk -type f -name "*.apk" -print
 
       - name: Upload Debug APK
         if: ${{ github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == 'both' }}
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
 
       - name: Build Release APK
         if: ${{ github.event.inputs.build_type == 'release' || github.event.inputs.build_type == 'both' }}
         run: ./gradlew assembleRelease
+
+      - name: Show generated Release APKs
+        if: always()
+        run: find app/build/outputs/apk/release -type f -name "*.apk" -print
 
       - name: Upload Release APK
         if: ${{ github.event.inputs.build_type == 'release' || github.event.inputs.build_type == 'both' }}
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: app/build/outputs/apk/release/app-release-unsigned.apk
+          path: app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
 
   test:
     runs-on: ubuntu-latest
@@ -79,8 +85,9 @@ jobs:
         run: ./gradlew testDebugUnitTest
 
       - name: Upload test report
-        uses: actions/upload-artifact@v4
         if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: app/build/reports/tests/
+          if-no-files-found: warn
