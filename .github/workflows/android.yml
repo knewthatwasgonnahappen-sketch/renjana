@@ -84,7 +84,3 @@ jobs:
         with:
           name: test-results
           path: app/build/reports/tests/
-
-The original workflow explicitly runs "./gradlew build", which is what invokes the failing lint phase, and then separately runs "./gradlew lint".
-
-If your only goal is “make CI produce the APK right now,” this is the minimal workflow change.
